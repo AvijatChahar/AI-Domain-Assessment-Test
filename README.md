@@ -1,5 +1,3 @@
-# AI-Domain-Assessment-Test
-Predict which domain you should work in for more satisfaction in life.
 # 🧠 AI Domain Intelligence Quiz
 
 A psychological profiling tool that helps aspiring AI engineers discover which industry domain they're best suited for — based on instincts, values, and thinking style rather than technical knowledge.
