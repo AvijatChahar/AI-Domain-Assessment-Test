@@ -44,8 +44,8 @@ At the end, you receive:
 Just download `index.html` and open it in any modern browser. No server needed.
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/ai-domain-quiz.git
-cd ai-domain-quiz
+git clone https://github.com/AvijatChahar/AI-Domain-Assessment-Test/
+cd AI-Domain-Assessment-Test
 open index.html   # macOS
 # or double-click the file in your file explorer
 ```
@@ -60,15 +60,6 @@ python -m http.server 8000
 # Using Node.js (npx)
 npx serve .
 ```
-
-Then visit `http://localhost:8000` in your browser.
-
-### Option 3 — Deploy to GitHub Pages
-1. Push the repo to GitHub
-2. Go to **Settings → Pages**
-3. Set source to `main` branch, `/ (root)` folder
-4. Your quiz will be live at `https://YOUR_USERNAME.github.io/ai-domain-quiz`
-
 ---
 
 ## 📁 Project Structure
