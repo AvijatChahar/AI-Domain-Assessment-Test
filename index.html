@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domain Intelligence Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent: #7c6af7;
+    --accent2: #f7a26a;
+    --accent3: #6af7c8;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --card: #13131c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .bg-grid {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,106,247,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,106,247,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .bg-orb {
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    opacity: 0.15;
+  }
+  .orb1 { background: var(--accent); top: -200px; right: -100px; }
+  .orb2 { background: var(--accent2); bottom: -200px; left: -100px; }
+
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 60px;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(124,106,247,0.3);
+    padding: 6px 14px;
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 14px;
+    background: linear-gradient(135deg, #e8e8f0 0%, #7c6af7 60%, #f7a26a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.7;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  /* Progress */
+  .progress-wrap {
+    margin-bottom: 40px;
+    animation: fadeUp 0.6s ease both 0.2s;
+  }
+
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Question Card */
+  .question-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.5s ease both;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .question-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+
+  .q-number {
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .q-number::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .question-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--text);
+    margin-bottom: 32px;
+  }
+
+  /* Options */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 18px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .option::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .option:hover {
+    border-color: rgba(124,106,247,0.5);
+    transform: translateX(4px);
+  }
+
+  .option:hover::before { opacity: 0.05; }
+
+  .option.selected {
+    border-color: var(--accent);
+    background: rgba(124,106,247,0.08);
+  }
+
+  .option.selected .opt-key {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .opt-key {
+    min-width: 28px;
+    height: 28px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    transition: all 0.2s;
+    flex-shrink: 0;
+    margin-top: 1px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .opt-text { position: relative; z-index: 1; }
+
+  /* Nav Buttons */
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    padding: 13px 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    text-transform: uppercase;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+  }
+
+  .btn-primary:hover {
+    background: #6a58e8;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(124,106,247,0.3);
+  }
+
+  .btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Results */
+  .results { animation: fadeUp 0.7s ease both; }
+
+  .results-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .results-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+  }
+
+  .results-sub {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  .profile-card {
+    background: var(--card);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .profile-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top left, rgba(124,106,247,0.08), transparent 60%);
+  }
+
+  .profile-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .profile-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+    position: relative;
+  }
+
+  .profile-desc {
+    color: #aaa;
+    font-size: 13px;
+    line-height: 1.8;
+    position: relative;
+  }
+
+  .rankings-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .domain-rank {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .domain-rank:last-child { border-bottom: none; }
+
+  .rank-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    min-width: 36px;
+    color: var(--border);
+  }
+
+  .rank-num.top { color: var(--accent); }
+  .rank-num.second { color: var(--accent2); }
+  .rank-num.third { color: var(--accent3); }
+
+  .rank-info { flex: 1 }
+
+  .rank-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 4px;
+  }
+
+  .rank-reason {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .rank-bar-wrap {
+    width: 100px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .rank-bar {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .rank-score {
+    font-size: 11px;
+    color: var(--muted);
+    min-width: 30px;
+    text-align: right;
+  }
+
+  .restart-btn {
+    display: block;
+    width: 100%;
+    margin-top: 32px;
+    padding: 16px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .restart-btn:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hidden { display: none; }
+
+  .intro-section { animation: fadeUp 0.6s ease both 0.3s; opacity: 0; animation-fill-mode: forwards; }
+
+  .start-btn {
+    display: inline-block;
+    margin-top: 32px;
+    background: var(--accent);
+    color: white;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 16px 40px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .start-btn:hover {
+    background: #6a58e8;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(124,106,247,0.35);
+  }
+
+  .traits-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .trait-tag {
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(124,106,247,0.3);
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+
+<div class="container">
+
+  <!-- Header (always visible) -->
+  <div class="header">
+    <div class="tag">Psychological Profile Assessment</div>
+    <h1>Find Your AI Domain</h1>
+    <p class="subtitle">20 indirect questions designed to map your instincts, values, and thinking style to the domain where you'll naturally thrive.</p>
+  </div>
+
+  <!-- Intro -->
+  <div id="intro" class="intro-section" style="text-align:center">
+    <p style="color:var(--muted);font-size:13px;line-height:1.9;max-width:540px;margin:0 auto">
+      There are no right or wrong answers. Don't overthink — go with your gut. Each question is designed to reveal something about how you think and what motivates you, not to test your knowledge.
+    </p>
+    <br>
+    <p style="color:var(--muted);font-size:12px;letter-spacing:1px">⏱ ~5 minutes &nbsp;·&nbsp; 20 questions &nbsp;·&nbsp; Personalized ranking</p>
+    <button class="start-btn" onclick="startQuiz()">Begin Assessment →</button>
+  </div>
+
+  <!-- Quiz -->
+  <div id="quiz" class="hidden">
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span id="q-counter">Question 1 of 20</span>
+        <span id="q-pct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+
+    <div class="question-card" id="question-card">
+      <div class="q-number" id="q-num">01 / 20</div>
+      <div class="question-text" id="question-text"></div>
+      <div class="options" id="options"></div>
+    </div>
+
+    <div class="nav">
+      <button class="btn btn-ghost" id="prev-btn" onclick="prevQ()" disabled>← Back</button>
+      <button class="btn btn-primary" id="next-btn" onclick="nextQ()" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="results" class="hidden results">
+    <div class="results-header">
+      <div class="tag">Your Results</div>
+      <div class="results-title">Profile Complete</div>
+      <div class="results-sub">Based on your answers, here's how your psychology maps to AI domains.</div>
+    </div>
+
+    <div class="profile-card" id="profile-card">
+      <div class="profile-label">Your Archetype</div>
+      <div class="profile-name" id="archetype-name"></div>
+      <div class="profile-desc" id="archetype-desc"></div>
+      <div class="traits-wrap" id="traits-wrap"></div>
+    </div>
+
+    <div class="rankings-title">Domain Rankings — Best Fit First</div>
+    <div id="domain-list"></div>
+
+    <button class="restart-btn" onclick="restart()">↺ Retake Assessment</button>
+  </div>
+
+</div>
+
+<script>
+const questions = [
+  {
+    text: "You have a free Saturday with no obligations. What sounds most appealing?",
+    options: [
+      { text: "Reading about how markets or economies work — money and systems fascinate you", scores: { fintech: 3, enterprise: 1 } },
+      { text: "Watching a documentary about a medical breakthrough or unsolved disease", scores: { health: 3, climate: 1 } },
+      { text: "Building something with your hands — a project, a gadget, anything tangible", scores: { defense: 2, enterprise: 2 } },
+      { text: "Writing, journaling, or organizing your thoughts into a clear argument", scores: { legal: 3, enterprise: 1 } }
+    ]
+  },
+  {
+    text: "A friend asks for your help. Which situation do you feel most energized by?",
+    options: [
+      { text: "Helping them understand a complex financial decision — loan, investment, budget", scores: { fintech: 3 } },
+      { text: "Helping them navigate a health scare and understand their options", scores: { health: 3 } },
+      { text: "Helping them fight an unfair situation — a contract dispute, a policy they disagree with", scores: { legal: 3, defense: 1 } },
+      { text: "Helping them automate or streamline something annoying in their work life", scores: { enterprise: 3 } }
+    ]
+  },
+  {
+    text: "Which headline makes you lean forward and want to read more?",
+    options: [
+      { text: "'AI predicts stock crashes 3 months before they happen'", scores: { fintech: 3 } },
+      { text: "'New AI tool detects cancer from a single blood sample'", scores: { health: 3 } },
+      { text: "'Algorithm exposes loopholes in major corporate contracts'", scores: { legal: 3 } },
+      { text: "'AI cuts city's carbon emissions by 40% in 12 months'", scores: { climate: 3 } }
+    ]
+  },
+  {
+    text: "When you disagree with a rule or policy, your first instinct is to:",
+    options: [
+      { text: "Find the loophole or argue it logically until you win", scores: { legal: 3, fintech: 1 } },
+      { text: "Build an alternative system that makes the rule irrelevant", scores: { enterprise: 2, fintech: 2 } },
+      { text: "Research the data to prove whether the rule actually works", scores: { health: 2, climate: 2 } },
+      { text: "Organize and push for change through proper channels", scores: { defense: 2, legal: 1 } }
+    ]
+  },
+  {
+    text: "You're most bothered when a system fails because:",
+    options: [
+      { text: "People lose money due to inefficiency, fraud, or bad decisions", scores: { fintech: 3 } },
+      { text: "People suffer physically when better tools could have prevented it", scores: { health: 3 } },
+      { text: "The environment pays a price no one accounts for", scores: { climate: 3 } },
+      { text: "Important work gets buried under bureaucratic paperwork", scores: { legal: 2, enterprise: 2 } }
+    ]
+  },
+  {
+    text: "Which type of work would feel most satisfying at the end of the day?",
+    options: [
+      { text: "You built a model that correctly flagged suspicious transactions", scores: { fintech: 3, defense: 1 } },
+      { text: "You helped a hospital cut diagnostic errors by 20%", scores: { health: 3 } },
+      { text: "You automated a legal review process that used to take lawyers 3 days", scores: { legal: 3 } },
+      { text: "You shipped a feature used by 50,000 people by end of day", scores: { enterprise: 3 } }
+    ]
+  },
+  {
+    text: "Which word resonates with you most deeply as a life value?",
+    options: [
+      { text: "Precision", scores: { fintech: 2, health: 2 } },
+      { text: "Justice", scores: { legal: 3, defense: 1 } },
+      { text: "Scale", scores: { enterprise: 3, climate: 1 } },
+      { text: "Longevity", scores: { health: 2, climate: 3 } }
+    ]
+  },
+  {
+    text: "What kind of problem keeps you up at night (in a good, curious way)?",
+    options: [
+      { text: "Why do financial crashes keep happening despite all our models?", scores: { fintech: 3 } },
+      { text: "Why do we still have no cure for diseases we've known about for decades?", scores: { health: 3 } },
+      { text: "Why do innocent people lose legal battles just because they can't afford a lawyer?", scores: { legal: 3 } },
+      { text: "Why do companies keep promising sustainability goals they never hit?", scores: { climate: 3 } }
+    ]
+  },
+  {
+    text: "You're building a startup. Which pitch excites you most?",
+    options: [
+      { text: "AI that gives everyday people the same financial insight as Wall Street traders", scores: { fintech: 3 } },
+      { text: "AI copilot for doctors that drafts clinical notes in real time during appointments", scores: { health: 3 } },
+      { text: "AI that reads any contract and tells you in plain English what you're agreeing to", scores: { legal: 3 } },
+      { text: "AI that optimizes energy usage for entire cities automatically", scores: { climate: 3 } }
+    ]
+  },
+  {
+    text: "Which risk makes you most uncomfortable in your work?",
+    options: [
+      { text: "Being responsible for a financial loss — even accidentally", scores: { legal: 2, enterprise: 2 } },
+      { text: "Being responsible for a wrong medical recommendation", scores: { health: 3, defense: 1 } },
+      { text: "Building something that gets misused for surveillance or control", scores: { defense: 2, legal: 2 } },
+      { text: "Shipping fast and breaking things — you prefer careful, thorough work", scores: { health: 2, fintech: 2 } }
+    ]
+  },
+  {
+    text: "Which school subject secretly fascinated you even if you didn't pursue it?",
+    options: [
+      { text: "Economics or accounting — how money flows through systems", scores: { fintech: 3 } },
+      { text: "Biology or chemistry — how living things work at a fundamental level", scores: { health: 3 } },
+      { text: "Environmental science — climate, ecosystems, sustainability", scores: { climate: 3 } },
+      { text: "Law, civics, or philosophy — rules, rights, and reasoning", scores: { legal: 3 } }
+    ]
+  },
+  {
+    text: "How do you feel about working in heavily regulated industries?",
+    options: [
+      { text: "I like it — constraints force creative thinking and protect people", scores: { health: 2, legal: 2 } },
+      { text: "I can handle it if the mission matters enough", scores: { fintech: 2, defense: 2 } },
+      { text: "I prefer speed and autonomy — regulation slows innovation", scores: { enterprise: 3 } },
+      { text: "I see regulation as part of the problem I want to solve", scores: { legal: 2, climate: 2 } }
+    ]
+  },
+  {
+    text: "When you think about the next 20 years, which crisis concerns you most personally?",
+    options: [
+      { text: "Wealth inequality and financial instability getting worse", scores: { fintech: 3 } },
+      { text: "Healthcare systems collapsing under aging populations", scores: { health: 3 } },
+      { text: "Climate tipping points that become irreversible", scores: { climate: 3 } },
+      { text: "AI being used to concentrate power in the hands of a few", scores: { legal: 2, defense: 2 } }
+    ]
+  },
+  {
+    text: "Your ideal team is made up of:",
+    options: [
+      { text: "Analysts, quants, and risk modelers who obsess over numbers", scores: { fintech: 3 } },
+      { text: "Doctors, researchers, and scientists who bring domain depth", scores: { health: 3 } },
+      { text: "Lawyers, policy experts, and ethicists who think in edge cases", scores: { legal: 3 } },
+      { text: "Designers, PMs, and engineers who ship and iterate fast", scores: { enterprise: 3 } }
+    ]
+  },
+  {
+    text: "Someone hands you a large, messy dataset. Your first reaction is:",
+    options: [
+      { text: "What financial signal is hiding in here?", scores: { fintech: 3 } },
+      { text: "What health pattern can I surface for a clinician?", scores: { health: 3 } },
+      { text: "What inconsistency or injustice does this data reveal?", scores: { legal: 2, climate: 2 } },
+      { text: "How do I turn this into a useful product feature?", scores: { enterprise: 3 } }
+    ]
+  },
+  {
+    text: "How important is it that your work has direct, visible human impact?",
+    options: [
+      { text: "Critical — I need to see or hear from the people my work affects", scores: { health: 3, legal: 1 } },
+      { text: "Important, but I'm fine if impact is systemic rather than individual", scores: { climate: 3, fintech: 1 } },
+      { text: "I care more about the quality and elegance of the system I'm building", scores: { fintech: 2, enterprise: 2 } },
+      { text: "I want impact at scale — millions of users matter more than one story", scores: { enterprise: 3 } }
+    ]
+  },
+  {
+    text: "Which movie or show would you genuinely binge?",
+    options: [
+      { text: "A docuseries on hedge fund collapses and financial fraud", scores: { fintech: 3 } },
+      { text: "A drama about doctors racing to diagnose a rare disease", scores: { health: 3 } },
+      { text: "A thriller about a whistleblower taking on a corporation with secret documents", scores: { legal: 3, defense: 1 } },
+      { text: "A documentary about engineers trying to save a dying ecosystem", scores: { climate: 3 } }
+    ]
+  },
+  {
+    text: "Your biggest professional fear is:",
+    options: [
+      { text: "Building something technically impressive that no one uses", scores: { enterprise: 2, health: 1 } },
+      { text: "Building something people use that ends up harming them", scores: { health: 3, legal: 1 } },
+      { text: "Being stuck on boring problems that don't matter", scores: { enterprise: 2, fintech: 1 } },
+      { text: "Working on something that makes the world measurably worse", scores: { climate: 2, defense: 2 } }
+    ]
+  },
+  {
+    text: "Which statement resonates most with how you see yourself?",
+    options: [
+      { text: "I want to understand systems deeply enough to predict what breaks them", scores: { fintech: 3, defense: 1 } },
+      { text: "I want to use technology to help people who can't help themselves", scores: { health: 2, legal: 2 } },
+      { text: "I want to build things millions of people interact with every day", scores: { enterprise: 3 } },
+      { text: "I want my work to still matter 50 years from now", scores: { climate: 3, health: 1 } }
+    ]
+  },
+  {
+    text: "Finally — money aside, which outcome would make you proudest in 10 years?",
+    options: [
+      { text: "You built AI that prevented a financial crisis or protected millions from fraud", scores: { fintech: 3 } },
+      { text: "You contributed to an AI system that significantly improved survival rates for a disease", scores: { health: 3 } },
+      { text: "You made legal representation accessible to people who couldn't otherwise afford it", scores: { legal: 3 } },
+      { text: "Your AI optimization reduced carbon emissions equivalent to removing a million cars", scores: { climate: 3 } }
+    ]
+  }
+];
+
+const domains = {
+  fintech: {
+    name: "Fintech & Finance AI",
+    color: "#7c6af7",
+    shortDesc: "Fraud detection, trading algorithms, financial advisors, risk modeling"
+  },
+  health: {
+    name: "Healthcare & Biotech AI",
+    color: "#6af7c8",
+    shortDesc: "Clinical tools, drug discovery, diagnostics, medical imaging"
+  },
+  legal: {
+    name: "Legal Tech AI",
+    color: "#f7a26a",
+    shortDesc: "Contract analysis, legal research, compliance, due diligence"
+  },
+  enterprise: {
+    name: "Enterprise SaaS AI",
+    color: "#f76af7",
+    shortDesc: "Productivity tools, copilots, workflow automation, product features"
+  },
+  climate: {
+    name: "Climate Tech AI",
+    color: "#6af7a2",
+    shortDesc: "Energy optimization, carbon accounting, grid management, sustainability"
+  },
+  defense: {
+    name: "Defense & Gov AI",
+    color: "#f7d76a",
+    shortDesc: "Intelligence analysis, logistics, security systems, national infrastructure"
+  }
+};
+
+const archetypes = [
+  {
+    key: "fintech",
+    name: "The Systems Strategist",
+    desc: "You're drawn to the hidden logic underneath surface-level chaos. Financial systems appeal to you because they're essentially math with real-world consequences — and you want to be the one who understands the rules well enough to predict when they break. You're analytical, competitive, and comfortable with ambiguity when the stakes are high.",
+    traits: ["Pattern recognition", "Risk appetite", "Analytical depth", "Competitive drive"]
+  },
+  {
+    key: "health",
+    name: "The Empathetic Engineer",
+    desc: "You build things for people, not for metrics. Healthcare AI resonates because the feedback loop is visceral — your work either helps someone live better or it doesn't. You hold yourself to an unusually high standard of accuracy and care because you understand that errors here have human consequences, not just business ones.",
+    traits: ["High accountability", "Empathy-driven", "Detail orientation", "Mission alignment"]
+  },
+  {
+    key: "legal",
+    name: "The Principled Architect",
+    desc: "You think in edge cases and ethical frameworks. You're not just interested in what a system does but whether it's fair, accurate, and accountable. Legal Tech is a natural fit because it rewards the kind of rigorous, logical thinking you already use — and because the gap between who has access to legal power and who doesn't genuinely bothers you.",
+    traits: ["Logical rigor", "Ethics-first", "Document intelligence", "Contrarian thinking"]
+  },
+  {
+    key: "enterprise",
+    name: "The Scale Builder",
+    desc: "You think big. The idea of millions of people using something you built energizes you more than a perfectly elegant system no one sees. You're pragmatic, fast-moving, and deeply product-minded. Enterprise AI is your arena because it sits at the intersection of technical execution and real user behavior — and you're interested in both.",
+    traits: ["Product thinking", "Scale obsession", "Fast iteration", "User focus"]
+  },
+  {
+    key: "climate",
+    name: "The Long-Game Thinker",
+    desc: "You measure your work in decades, not quarters. Climate Tech appeals because the problems are hard, the stakes are civilizational, and most people aren't paying attention yet — which means there's room to do something genuinely important. You're drawn to complexity that other engineers avoid, and you're patient enough to work on problems without immediate validation.",
+    traits: ["Long-term thinking", "Systems perspective", "Intellectual courage", "Purpose-driven"]
+  },
+  {
+    key: "defense",
+    name: "The Structured Operator",
+    desc: "You think in constraints and consequences. Defense and government AI attracts you because the requirements are non-negotiable — accuracy, reliability, and accountability aren't optional. You're drawn to mission-critical environments where imprecision has real costs, and you're comfortable working within strict operational frameworks.",
+    traits: ["Security mindset", "Mission-critical thinking", "Operational precision", "Institutional trust"]
+  }
+];
+
+let current = 0;
+let answers = new Array(questions.length).fill(null);
+
+function startQuiz() {
+  document.getElementById('intro').classList.add('hidden');
+  document.getElementById('quiz').classList.remove('hidden');
+  renderQ();
+}
+
+function renderQ() {
+  const q = questions[current];
+  document.getElementById('q-num').textContent = String(current + 1).padStart(2, '0') + ' / 20';
+  document.getElementById('q-counter').textContent = `Question ${current + 1} of 20`;
+  const pct = Math.round((current / questions.length) * 100);
+  document.getElementById('q-pct').textContent = pct + '%';
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('question-text').textContent = q.text;
+
+  const opts = document.getElementById('options');
+  opts.innerHTML = '';
+  const keys = ['A', 'B', 'C', 'D'];
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option' + (answers[current] === i ? ' selected' : '');
+    btn.innerHTML = `<span class="opt-key">${keys[i]}</span><span class="opt-text">${opt.text}</span>`;
+    btn.onclick = () => selectOpt(i);
+    opts.appendChild(btn);
+  });
+
+  document.getElementById('prev-btn').disabled = current === 0;
+  document.getElementById('next-btn').disabled = answers[current] === null;
+  document.getElementById('next-btn').textContent = current === questions.length - 1 ? 'See Results →' : 'Next →';
+
+  // Animate card
+  const card = document.getElementById('question-card');
+  card.style.animation = 'none';
+  card.offsetHeight;
+  card.style.animation = 'fadeUp 0.4s ease both';
+}
+
+function selectOpt(i) {
+  answers[current] = i;
+  document.querySelectorAll('.option').forEach((el, idx) => {
+    el.classList.toggle('selected', idx === i);
+  });
+  document.getElementById('next-btn').disabled = false;
+}
+
+function nextQ() {
+  if (answers[current] === null) return;
+  if (current < questions.length - 1) {
+    current++;
+    renderQ();
+  } else {
+    showResults();
+  }
+}
+
+function prevQ() {
+  if (current > 0) { current--; renderQ(); }
+}
+
+function showResults() {
+  document.getElementById('quiz').classList.add('hidden');
+  document.getElementById('results').classList.remove('hidden');
+
+  // Calculate scores
+  const scores = { fintech: 0, health: 0, legal: 0, enterprise: 0, climate: 0, defense: 0 };
+  answers.forEach((ans, qi) => {
+    if (ans === null) return;
+    const s = questions[qi].options[ans].scores;
+    Object.entries(s).forEach(([k, v]) => { scores[k] = (scores[k] || 0) + v; });
+  });
+
+  // Sort
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const topKey = sorted[0][0];
+  const maxScore = sorted[0][1];
+
+  // Archetype
+  const arch = archetypes.find(a => a.key === topKey);
+  document.getElementById('archetype-name').textContent = arch.name;
+  document.getElementById('archetype-desc').textContent = arch.desc;
+  const tw = document.getElementById('traits-wrap');
+  tw.innerHTML = arch.traits.map(t => `<span class="trait-tag">${t}</span>`).join('');
+
+  // Rankings
+  const dl = document.getElementById('domain-list');
+  dl.innerHTML = '';
+  sorted.forEach(([key, score], idx) => {
+    const d = domains[key];
+    const pct = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+    const rankClass = idx === 0 ? 'top' : idx === 1 ? 'second' : idx === 2 ? 'third' : '';
+    const el = document.createElement('div');
+    el.className = 'domain-rank';
+    el.style.animationDelay = (idx * 0.08) + 's';
+    el.innerHTML = `
+      <div class="rank-num ${rankClass}">${String(idx + 1).padStart(2, '0')}</div>
+      <div class="rank-info">
+        <div class="rank-name">${d.name}</div>
+        <div class="rank-reason">${d.shortDesc}</div>
+      </div>
+      <div class="rank-bar-wrap"><div class="rank-bar" style="width:0%;background:${d.color}" data-pct="${pct}"></div></div>
+      <div class="rank-score">${pct}%</div>
+    `;
+    dl.appendChild(el);
+  });
+
+  // Animate bars
+  setTimeout(() => {
+    document.querySelectorAll('.rank-bar').forEach(bar => {
+      bar.style.width = bar.dataset.pct + '%';
+    });
+  }, 200);
+}
+
+function restart() {
+  current = 0;
+  answers = new Array(questions.length).fill(null);
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('intro').classList.remove('hidden');
+}
+</script>
+</body>
+</html>
